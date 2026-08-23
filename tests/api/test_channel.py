@@ -1,0 +1,72 @@
+from fastapi.testclient import TestClient
+from app.main import app
+from unittest.mock import Mock
+from app.services.channel_service import ChannelService
+from app.models.channel import Channel
+from datetime import datetime
+from fastapi import status
+from app.api.errors.channel import ChannelAlreadyExistsError, InvalidChannelNameError
+
+
+client = TestClient(app)
+
+
+def assert_error_format(body):
+    """
+    Asserts that the error response follows the RFC 7807 Problem 
+    Details format.
+    """
+
+    assert body["type"] == "about:blank"
+    assert "title" in body
+    assert body["status"] == status.HTTP_400_BAD_REQUEST
+    assert "detail" in body
+    assert "instance" in body
+
+
+def test_create_channel_success():
+    ChannelService.create_channel = Mock(
+        return_value=Channel(
+            id=1, name="Test Channel", createdAt=datetime(2026, 8, 23, 18, 0, 0)
+        )
+    )
+
+    response = client.post("/channels", json={"name": "Test Channel"})
+
+    assert response.status_code == status.HTTP_201_CREATED
+
+    body = response.json()
+
+    assert body["data"]["name"] == "Test Channel"
+
+
+def test_create_channel_empty_name():
+    response = client.post("/channels", json={"name": ""})
+
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+    body = response.json()
+    assert_error_format(body)
+
+
+def test_create_channel_too_long_name():
+    long_name = "A" * 51
+    response = client.post("/channels", json={"name": long_name})
+
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+    body = response.json()
+    assert_error_format(body)
+
+
+def test_create_channel_already_exists():
+    ChannelService.create_channel = Mock(
+        side_effect=ChannelAlreadyExistsError("Test Channel")
+    )
+
+    response = client.post("/channels", json={"name": "Test Channel"})
+
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+    body = response.json()
+    assert_error_format(body)

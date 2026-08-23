@@ -14,3 +14,6 @@ logs:
 
 ps:
 	docker compose ps
+
+test:
+	docker compose run --rm app pytest -v
