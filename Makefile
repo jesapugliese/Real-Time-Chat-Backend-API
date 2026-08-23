@@ -1,7 +1,10 @@
-.PHONY: up down build restart logs ps
+.PHONY: build up down restart logs ps test
+
+build:
+	docker compose build
 
 up:
-	docker compose up -d --build
+	docker compose up -d
 
 down:
 	docker compose down

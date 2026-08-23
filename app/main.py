@@ -1,8 +1,17 @@
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
+from app.api.router import router
+from app.database.database import Database
+from app.api.error_handler import ErrorHandler
 
-app = FastAPI()
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    Database.init_db()
+    yield
 
 
-@app.get("/health")
-def health():
-    return {"status": "ok"}
+app = FastAPI(lifespan=lifespan)
+
+ErrorHandler.register_error_handlers(app)
+app.include_router(router)
