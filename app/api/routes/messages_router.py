@@ -59,9 +59,9 @@ async def channel_websocket(websocket: WebSocket, channel_id: int):
             )
     except AppError as exc:
         logger.error(
-            f"AppError occurred for channel ID: {channel_id}: {exc.title} - {exc.detail}"
+            f"AppError occurred for channel ID: {channel_id}: {exc.detail}"
         )
-        await ErrorHandler.websocket_error_response(websocket, exc, channel_id)
+        await ErrorHandler.websocket_error_response(websocket, exc)
     except WebSocketDisconnect:
         logger.info(f"WebSocket disconnected for channel ID: {channel_id}")
         websocket_manager.disconnect(channel_id, websocket)
