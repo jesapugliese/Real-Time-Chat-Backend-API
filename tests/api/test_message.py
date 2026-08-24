@@ -1,0 +1,157 @@
+from datetime import datetime
+from unittest.mock import patch
+
+from fastapi.testclient import TestClient
+from fastapi import status
+
+from app.main import app
+from app.models.message import Message
+from app.services.message_service import MessageService
+from app.api.errors.message import InvalidMessageContentError, MessageNotFoundError
+
+
+client = TestClient(app)
+
+
+def assert_error_format(body, expected_status):
+    """
+    Asserts that the error response follows the RFC 7807 Problem
+    Details format.
+    """
+
+    assert body["type"] == "about:blank"
+    assert "title" in body
+    assert body["status"] == expected_status
+    assert "detail" in body
+    assert "instance" in body
+
+
+def test_connect_to_channel_websocket():
+    with client.websocket_connect(f"/channels/1/ws") as websocket:
+        assert websocket is not None
+
+
+def test_send_message():
+    with patch.object(
+        MessageService,
+        "create_message",
+        return_value=Message(
+            id=1,
+            channelId=1,
+            authorId=1,
+            content="This a message",
+            createdAt=datetime(2026, 8, 23, 18, 0, 0),
+            editedAt=None,
+        ),
+    ) as mock_create_message:
+        with client.websocket_connect(f"/channels/1/ws") as websocket:
+            websocket.send_json(
+                {
+                    "id": None,
+                    "channelId": 1,
+                    "authorId": 1,
+                    "content": "This a message",
+                }
+            )
+
+            response = websocket.receive_json()
+
+    assert response["id"] == 1
+    assert response["channelId"] == 1
+    assert response["authorId"] == 1
+    assert response["content"] == "This a message"
+    assert response["editedAt"] is None
+
+    mock_create_message.assert_called_once_with(
+        channel_id=1, author_id=1, content="This a message"
+    )
+
+
+def test_send_empty_message():
+    with patch.object(
+        MessageService,
+        "create_message",
+        side_effect=InvalidMessageContentError(""),
+    ):
+        with client.websocket_connect(f"/channels/1/ws") as websocket:
+            websocket.send_json(
+                {
+                    "id": None,
+                    "channelId": 1,
+                    "authorId": 1,
+                    "content": "",
+                }
+            )
+
+            response = websocket.receive_json()
+
+    assert_error_format(response, status.HTTP_400_BAD_REQUEST)
+
+
+def test_edit_message():
+    with patch.object(
+        MessageService,
+        "edit_message",
+        return_value=Message(
+            id=1,
+            channelId=1,
+            authorId=1,
+            content="Edited message",
+            createdAt=datetime(2026, 8, 23, 18, 0, 0),
+            editedAt=datetime(2026, 8, 23, 18, 5, 0),
+        ),
+    ) as mock_edit_message:
+        with client.websocket_connect(f"/channels/1/ws") as websocket:
+            websocket.send_json(
+                {
+                    "id": 1,
+                    "channelId": 1,
+                    "authorId": 1,
+                    "content": "Edited message",
+                }
+            )
+
+            response = websocket.receive_json()
+
+    assert response["id"] == 1
+    assert response["channelId"] == 1
+    assert response["authorId"] == 1
+    assert response["content"] == "Edited message"
+    assert response["editedAt"] is not None
+
+    mock_edit_message.assert_called_once_with(
+        channel_id=1, message_id=1, author_id=1, new_content="Edited message"
+    )
+
+
+def test_message_is_broadcasted_to_all_connected_clients():
+    with patch.object(
+        MessageService,
+        "create_message",
+        return_value=Message(
+            id=1,
+            channelId=1,
+            authorId=1,
+            content="This a message",
+            createdAt=datetime(2026, 8, 23, 18, 0, 0),
+            editedAt=None,
+        ),
+    ):
+        with client.websocket_connect(f"/channels/1/ws") as websocket1:
+            with client.websocket_connect(f"/channels/1/ws") as websocket2:
+                websocket1.send_json(
+                    {
+                        "id": None,
+                        "channelId": 1,
+                        "authorId": 1,
+                        "content": "This a message",
+                    }
+                )
+
+                response1 = websocket1.receive_json()
+                response2 = websocket2.receive_json()
+
+    assert response1["id"] == 1
+    assert response2["id"] == 1
+    assert response1["content"] == "This a message"
+    assert response2["content"] == "This a message"

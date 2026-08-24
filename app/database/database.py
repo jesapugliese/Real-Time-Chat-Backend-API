@@ -22,6 +22,7 @@ class Database:
 
         logger.info("Initializing database.")
         Database.__init_channels_table()
+        Database.__init_messages_table()
         logger.info("Database initialized successfully.")
 
     @staticmethod
@@ -42,6 +43,31 @@ class Database:
 
                     CREATE UNIQUE INDEX IF NOT EXISTS channels_name_lower_unique
                     ON channels (LOWER(name));
+                    """
+                )
+
+            db_conn.commit()
+        finally:
+            db_conn.close()
+
+    @staticmethod
+    def __init_messages_table():
+        logger.info("Initializing messages table.")
+
+        db_conn = Database.get_connection()
+
+        try:
+            with db_conn.cursor() as cursor:
+                cursor.execute(
+                    """
+                    CREATE TABLE IF NOT EXISTS messages (
+                        id SERIAL PRIMARY KEY,
+                        channelId SERIAL NOT NULL REFERENCES channels(id) ON DELETE CASCADE,
+                        authorId SERIAL NOT NULL,
+                        content VARCHAR(2000) NOT NULL,
+                        createdAt TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                        editedAt TIMESTAMPTZ NULL
+                    );
                     """
                 )
 

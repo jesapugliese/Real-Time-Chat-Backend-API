@@ -1,9 +1,17 @@
-from fastapi import Request, status
+from app.api.errors.app_error import AppError
+from fastapi import Request, status, WebSocket
 from fastapi.responses import JSONResponse
 
 from app.api.errors.channel import (
     InvalidChannelNameError,
     ChannelAlreadyExistsError,
+)
+
+from app.api.errors.message import (
+    InvalidMessageContentError,
+    MessageNotFoundError,
+    MessageNotInChannelError,
+    UnauthorizedMessageEditError,
 )
 
 
@@ -34,6 +42,24 @@ class ErrorHandler:
                 "detail": detail,
                 "instance": request.url.path,
             },
+        )
+
+    @staticmethod
+    async def websocket_error_response(
+        websocket: WebSocket,
+        exc: AppError,
+        channel_id: int,
+    ) -> None:
+        """Sends an RFC 7807 Problem Details response over a WebSocket."""
+
+        await websocket.send_json(
+            {
+                "type": "about:blank",
+                "title": exc.title,
+                "status": exc.status_code,
+                "detail": exc.detail,
+                "instance": f"/channels/{channel_id}/ws",
+            }
         )
 
     @staticmethod
