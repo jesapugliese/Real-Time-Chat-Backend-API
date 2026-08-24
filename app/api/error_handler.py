@@ -1,4 +1,5 @@
-from fastapi import Request, status
+from app.api.errors.app_error import AppError
+from fastapi import Request, status, WebSocket
 from fastapi.responses import JSONResponse
 
 from app.api.errors.channel import (
@@ -10,9 +11,6 @@ from app.api.errors.channel import (
 class ErrorHandler:
     """
     Class that provides centralized exception handling for the API.
-
-    Converts application exceptions into HTTP responses following the
-    RFC 7807 Problem Details format.
     """
 
     @staticmethod
@@ -35,6 +33,15 @@ class ErrorHandler:
                 "instance": request.url.path,
             },
         )
+
+    @staticmethod
+    async def websocket_error_response(
+        websocket: WebSocket,
+        exc: AppError,
+    ) -> None:
+        """Sends an error response over a WebSocket connection."""
+
+        await websocket.send_json({"error": exc.detail})
 
     @staticmethod
     def register_error_handlers(app) -> None:
