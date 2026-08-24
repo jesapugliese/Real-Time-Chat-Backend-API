@@ -1,6 +1,6 @@
 from fastapi.testclient import TestClient
 from app.main import app
-from unittest.mock import Mock
+from unittest.mock import patch
 from app.services.channel_service import ChannelService
 from app.models.channel import Channel
 from datetime import datetime
@@ -13,7 +13,7 @@ client = TestClient(app)
 
 def assert_error_format(body):
     """
-    Asserts that the error response follows the RFC 7807 Problem 
+    Asserts that the error response follows the RFC 7807 Problem
     Details format.
     """
 
@@ -25,13 +25,14 @@ def assert_error_format(body):
 
 
 def test_create_channel_success():
-    ChannelService.create_channel = Mock(
+    with patch.object(
+        ChannelService,
+        "create_channel",
         return_value=Channel(
             id=1, name="Test Channel", createdAt=datetime(2026, 8, 23, 18, 0, 0)
-        )
-    )
-
-    response = client.post("/channels", json={"name": "Test Channel"})
+        ),
+    ):
+        response = client.post("/channels", json={"name": "Test Channel"})
 
     assert response.status_code == status.HTTP_201_CREATED
 
@@ -60,11 +61,12 @@ def test_create_channel_too_long_name():
 
 
 def test_create_channel_already_exists():
-    ChannelService.create_channel = Mock(
-        side_effect=ChannelAlreadyExistsError("Test Channel")
-    )
-
-    response = client.post("/channels", json={"name": "Test Channel"})
+    with patch.object(
+        ChannelService,
+        "create_channel",
+        side_effect=ChannelAlreadyExistsError("Test Channel"),
+    ):
+        response = client.post("/channels", json={"name": "Test Channel"})
 
     assert response.status_code == status.HTTP_400_BAD_REQUEST
 

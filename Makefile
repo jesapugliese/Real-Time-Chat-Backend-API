@@ -1,10 +1,7 @@
-.PHONY: build up down restart logs ps test
-
-build:
-	docker compose build
+.PHONY: up down restart logs ps test
 
 up:
-	docker compose up -d
+	docker compose up -d --build
 
 down:
 	docker compose down
@@ -16,4 +13,8 @@ ps:
 	docker compose ps
 
 test:
-	docker compose run --rm app pytest -v
+	docker compose --env-file .env.test -f compose.test.yml up -d test-database
+	docker compose --env-file .env.test -f compose.test.yml run --rm --build tests pytest -v; \
+	status=$$?; \
+	docker compose --env-file .env.test -f compose.test.yml down; \
+	exit $$status
