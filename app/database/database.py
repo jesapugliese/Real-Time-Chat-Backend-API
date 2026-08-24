@@ -1,3 +1,4 @@
+from loguru import logger
 import os
 import psycopg
 
@@ -19,10 +20,14 @@ class Database:
     def init_db():
         """Initializes the database by creating necessary tables."""
 
+        logger.info("Initializing database.")
         Database.__init_channels_table()
+        logger.info("Database initialized successfully.")
 
     @staticmethod
     def __init_channels_table():
+        logger.info("Initializing channels table.")
+
         db_conn = Database.get_connection()
 
         try:
