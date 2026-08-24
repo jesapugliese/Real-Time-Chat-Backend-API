@@ -59,3 +59,31 @@ class ChannelRepository:
                 )
         finally:
             db_conn.close()
+
+    @staticmethod
+    def get_all() -> list[Channel]:
+        """
+        Retrieves all channels from the database and returns a list of
+        Channel objects, ordered by creation date in ascending order.
+        """
+
+        db_conn = Database.get_connection()
+
+        try:
+            with db_conn.cursor() as cursor:
+                cursor.execute(
+                    """
+                    SELECT id, name, createdAt 
+                    FROM channels 
+                    ORDER BY createdAt ASC
+                    """
+                )
+
+                channels = cursor.fetchall()
+
+                return [
+                    Channel(id=channel[0], name=channel[1], createdAt=channel[2])
+                    for channel in channels
+                ]
+        finally:
+            db_conn.close()

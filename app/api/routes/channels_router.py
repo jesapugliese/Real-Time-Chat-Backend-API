@@ -1,6 +1,6 @@
-from fastapi import APIRouter, status, HTTPException
+from fastapi import APIRouter, status
 from loguru import logger
-from app.schemas.channel import ChannelCreateRequest, ChannelResponse
+from app.schemas.channel import *
 from app.services.channel_service import ChannelService
 from app.api.errors.channel import InvalidChannelNameError
 
@@ -13,7 +13,7 @@ router = APIRouter(prefix="/channels")
     status_code=status.HTTP_201_CREATED,
     summary="Create a new channel",
 )
-def create_channel(request: ChannelCreateRequest) -> dict:
+def create_channel(request: ChannelCreateRequest) -> ChannelCreateResponse:
     """Create a new channel with the given name."""
 
     logger.info(f'Received request to create channel with name: "{request.name}"')
@@ -26,8 +26,30 @@ def create_channel(request: ChannelCreateRequest) -> dict:
 
     channel = ChannelService.create_channel(channel_name)
 
-    return {
-        "data": ChannelResponse(
+    return ChannelCreateResponse(
+        data=ChannelResponse(
             id=channel.id, name=channel.name, createdAt=channel.createdAt
         )
-    }
+    )
+
+
+@router.get(
+    "",
+    status_code=status.HTTP_200_OK,
+    summary="Retrieve all channels",
+)
+def get_all_channels() -> ChannelListResponse:
+    """Retrieve all channels."""
+
+    logger.info("Received request to retrieve all channels")
+
+    channels = ChannelService.get_all_channels()
+
+    return ChannelListResponse(
+        data=[
+            ChannelResponse(
+                id=channel.id, name=channel.name, createdAt=channel.createdAt
+            )
+            for channel in channels
+        ]
+    )

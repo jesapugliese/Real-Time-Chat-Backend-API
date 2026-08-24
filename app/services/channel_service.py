@@ -22,3 +22,15 @@ class ChannelService:
         logger.info(f'Channel of name: "{channel_name}" created successfully.')
 
         return channel
+
+    @staticmethod
+    def get_all_channels() -> list[Channel]:
+        """Retrieves all channels from the database."""
+
+        logger.info("Retrieving all channels from the database")
+
+        channels = ChannelRepository.get_all()
+
+        logger.info(f"Retrieved {len(channels)} channels from the database")
+
+        return channels

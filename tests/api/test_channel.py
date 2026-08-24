@@ -72,3 +72,34 @@ def test_create_channel_already_exists():
 
     body = response.json()
     assert_error_format(body)
+
+
+def test_list_channels_success():
+    with patch.object(
+        ChannelService,
+        "get_all_channels",
+        return_value=[
+            Channel(id=1, name="Channel 1", createdAt=datetime(2026, 8, 23, 18, 0, 0)),
+            Channel(id=2, name="Channel 2", createdAt=datetime(2026, 8, 23, 18, 5, 0)),
+        ],
+    ):
+        response = client.get("/channels")
+
+    assert response.status_code == status.HTTP_200_OK
+
+    body = response.json()
+
+    assert len(body["data"]) == 2
+    assert body["data"][0]["name"] == "Channel 1"
+    assert body["data"][1]["name"] == "Channel 2"
+
+
+def test_list_channels_empty():
+    with patch.object(ChannelService, "get_all_channels", return_value=[]):
+        response = client.get("/channels")
+
+    assert response.status_code == status.HTTP_200_OK
+
+    body = response.json()
+
+    assert len(body["data"]) == 0

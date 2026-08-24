@@ -19,3 +19,11 @@ class ChannelResponse(BaseModel):
         """
 
         return value.isoformat(timespec="milliseconds").replace("+00:00", "Z")
+
+
+class ChannelCreateResponse(BaseModel):
+    data: ChannelResponse
+
+
+class ChannelListResponse(BaseModel):
+    data: list[ChannelResponse]

@@ -38,3 +38,20 @@ def test_channel_is_persisted_in_database():
     assert persisted_channel is not None
     assert persisted_channel.id == created_channel["id"]
     assert persisted_channel.name == "persistent-channel"
+
+
+def test_get_all_channels_integration():
+    with TestClient(app) as client:
+        client.post("/channels", json={"name": "integration-test-channel-2"})
+
+        response = client.get("/channels")
+
+    assert response.status_code == status.HTTP_200_OK
+
+    body = response.json()
+
+    assert "data" in body
+    assert isinstance(body["data"], list)
+    assert any(
+        channel["name"] == "integration-test-channel-2" for channel in body["data"]
+    )
