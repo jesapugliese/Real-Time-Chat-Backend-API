@@ -1,3 +1,4 @@
+from app.repositories.channel_repository import ChannelRepository
 from fastapi import status
 from fastapi.testclient import TestClient
 
@@ -19,3 +20,21 @@ def test_create_channel_integration():
     assert body["data"]["id"] is not None
     assert body["data"]["name"] == "integration-test-channel"
     assert "createdAt" in body["data"]
+
+
+def test_channel_is_persisted_in_database():
+    with TestClient(app) as client:
+        response = client.post(
+            "/channels",
+            json={"name": "persistent-channel"},
+        )
+
+        assert response.status_code == status.HTTP_201_CREATED
+
+        created_channel = response.json()["data"]
+
+        persisted_channel = ChannelRepository.find_by_name_ci("persistent-channel")
+
+    assert persisted_channel is not None
+    assert persisted_channel.id == created_channel["id"]
+    assert persisted_channel.name == "persistent-channel"

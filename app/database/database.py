@@ -40,7 +40,7 @@ class Database:
                         createdAt TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
                     );
 
-                    CREATE UNIQUE INDEX channels_name_lower_unique
+                    CREATE UNIQUE INDEX IF NOT EXISTS channels_name_lower_unique
                     ON channels (LOWER(name));
                     """
                 )
