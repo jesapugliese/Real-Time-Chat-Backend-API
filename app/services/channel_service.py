@@ -36,3 +36,15 @@ class ChannelService:
         logger.info(f"Retrieved {len(channels)} channels from the database")
 
         return channels
+
+    @staticmethod
+    def exists_by_id(channel_id: int) -> bool:
+        """Checks if a channel with the given ID exists."""
+
+        logger.info(f'Checking if channel with ID: "{channel_id}" exists')
+
+        exists = ChannelRepository.exists_by_id(channel_id)
+
+        logger.info(f'Channel with ID: "{channel_id}" exists: {exists}')
+
+        return exists

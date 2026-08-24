@@ -87,3 +87,27 @@ class ChannelRepository:
                 ]
         finally:
             db_conn.close()
+
+    @staticmethod
+    def exists_by_id(channel_id: int) -> bool:
+        """
+        Checks if a channel with the given ID exists in the database.
+        Returns True if it exists, otherwise False.
+        """
+
+        db_conn = Database.get_connection()
+
+        try:
+            with db_conn.cursor() as cursor:
+                cursor.execute(
+                    """
+                    SELECT 1 
+                    FROM channels 
+                    WHERE id = %s
+                    """,
+                    (channel_id,),
+                )
+
+                return cursor.fetchone() is not None
+        finally:
+            db_conn.close()
