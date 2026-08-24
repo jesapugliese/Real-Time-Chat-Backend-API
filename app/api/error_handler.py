@@ -7,13 +7,6 @@ from app.api.errors.channel import (
     ChannelAlreadyExistsError,
 )
 
-from app.api.errors.message import (
-    InvalidMessageContentError,
-    MessageNotFoundError,
-    MessageNotInChannelError,
-    UnauthorizedMessageEditError,
-)
-
 
 class ErrorHandler:
     """

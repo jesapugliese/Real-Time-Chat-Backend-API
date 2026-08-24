@@ -2,7 +2,6 @@ from fastapi import APIRouter, status
 from loguru import logger
 from app.schemas.channel import *
 from app.services.channel_service import ChannelService
-from app.api.errors.channel import InvalidChannelNameError
 
 
 router = APIRouter(prefix="/channels")
@@ -19,11 +18,6 @@ def create_channel(request: ChannelCreateRequest) -> ChannelCreateResponse:
     logger.info(f'Received request to create channel with name: "{request.name}"')
 
     channel_name = request.name
-
-    if not channel_name or len(channel_name) < 1 or len(channel_name) > 50:
-        logger.error(f'Invalid channel name: "{channel_name}"')
-        raise InvalidChannelNameError(channel_name)
-
     channel = ChannelService.create_channel(channel_name)
 
     return ChannelCreateResponse(
