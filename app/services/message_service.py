@@ -1,4 +1,7 @@
 from app.repositories.message_repository import MessageRepository
+from app.repositories.channel_repository import ChannelRepository
+from app.models.message import Message
+from app.api.errors.channel import ChannelNotFoundError
 from app.api.errors.message import (
     InvalidMessageContentError,
     MessageNotFoundError,
@@ -51,3 +54,20 @@ class MessageService:
         logger.info(f'Message with ID: "{message_id}" updated successfully.')
 
         return message
+
+    @staticmethod
+    def get_messages_by_channel(channel_id: int) -> list[Message]:
+        """Retrieves all messages for a specific channel."""
+
+        if not ChannelRepository.exists_by_id(channel_id):
+            raise ChannelNotFoundError(channel_id)
+
+        logger.info(f'Retrieving messages for channel with ID: "{channel_id}".')
+
+        messages = MessageRepository.find_by_channel_id(channel_id)
+
+        logger.info(
+            f'Retrieved {len(messages)} messages for channel with ID: "{channel_id}".'
+        )
+
+        return messages

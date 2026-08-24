@@ -166,3 +166,38 @@ def test_channel_not_found():
                 pass
 
     assert exc.value.code == 1008
+
+
+def test_get_messages_by_channel():
+    with (
+        patch.object(ChannelService, "exists_by_id", return_value=True),
+        patch.object(
+            MessageService,
+            "get_messages_by_channel",
+            return_value=[
+                Message(
+                    id=1,
+                    channelId=1,
+                    authorId=1,
+                    content="Message 1",
+                    createdAt=datetime(2026, 8, 23, 18, 0, 0),
+                    editedAt=None,
+                ),
+                Message(
+                    id=2,
+                    channelId=1,
+                    authorId=2,
+                    content="Message 2",
+                    createdAt=datetime(2026, 8, 23, 18, 5, 0),
+                    editedAt=None,
+                ),
+            ],
+        ),
+    ):
+        with client.websocket_connect(f"/channels/1/ws"):
+            response = client.get("/channels/1/messages")
+
+    assert response.status_code == 200
+    assert len(response.json()) == 2
+    assert response.json()[0]["content"] == "Message 1"
+    assert response.json()[1]["content"] == "Message 2"

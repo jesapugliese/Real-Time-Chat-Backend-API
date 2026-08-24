@@ -108,3 +108,40 @@ class MessageRepository:
                 )
         finally:
             db_conn.close()
+
+    @staticmethod
+    def find_by_channel_id(channel_id: int) -> list[Message]:
+        """
+        Retrieves all messages in the specified channel and returns a list of
+        Message objects.
+        """
+
+        db_conn = Database.get_connection()
+
+        try:
+            with db_conn.cursor() as cursor:
+                cursor.execute(
+                    """
+                    SELECT id, channelId, authorId, content, createdAt, editedAt 
+                    FROM messages 
+                    WHERE channelId = %s
+                    ORDER BY createdAt ASC
+                    """,
+                    (channel_id,),
+                )
+
+                messages = cursor.fetchall()
+
+                return [
+                    Message(
+                        id=message[0],
+                        channelId=message[1],
+                        authorId=message[2],
+                        content=message[3],
+                        createdAt=message[4],
+                        editedAt=message[5],
+                    )
+                    for message in messages
+                ]
+        finally:
+            db_conn.close()

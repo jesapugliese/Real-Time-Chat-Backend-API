@@ -5,6 +5,7 @@ from fastapi.responses import JSONResponse
 from app.api.errors.channel import (
     InvalidChannelNameError,
     ChannelAlreadyExistsError,
+    ChannelNotFoundError,
 )
 
 
@@ -55,6 +56,10 @@ class ErrorHandler:
             ChannelAlreadyExistsError,
             ErrorHandler.handle_channel_already_exists_error,
         )
+        app.add_exception_handler(
+            ChannelNotFoundError,
+            ErrorHandler.handle_channel_not_found_error,
+        )
 
     @staticmethod
     async def handle_invalid_channel_name_error(
@@ -76,4 +81,15 @@ class ErrorHandler:
             status_code=status.HTTP_400_BAD_REQUEST,
             title="Channel Already Exists",
             detail=f"Channel with name {exc.channel_name} already exists.",
+        )
+
+    @staticmethod
+    async def handle_channel_not_found_error(
+        request: Request, exc: ChannelNotFoundError
+    ) -> JSONResponse:
+        return ErrorHandler.error_response(
+            request=request,
+            status_code=status.HTTP_404_NOT_FOUND,
+            title="Channel Not Found",
+            detail=f"Channel with ID {exc.channel_id} not found.",
         )
