@@ -3,11 +3,7 @@ from app.api.errors.app_error import AppError
 
 
 class InvalidMessageContentError(AppError):
-    status_code = status.HTTP_400_BAD_REQUEST
-    title = "Invalid Message Content"
-
-    def __init__(self, content: str):
-        self.content = content
+    def __init__(self):
         self.detail = (
             "Message content cannot be empty or exceed the maximum allowed length."
         )
@@ -15,9 +11,6 @@ class InvalidMessageContentError(AppError):
 
 
 class MessageNotFoundError(AppError):
-    status_code = status.HTTP_404_NOT_FOUND
-    title = "Message Not Found"
-
     def __init__(self, message_id: int):
         self.message_id = message_id
         self.detail = f"Message with ID {message_id} not found."
@@ -25,9 +18,6 @@ class MessageNotFoundError(AppError):
 
 
 class UnauthorizedMessageEditError(AppError):
-    status_code = status.HTTP_403_FORBIDDEN
-    title = "Unauthorized Message Edit"
-
     def __init__(self, message_id: int, user_id: int):
         self.message_id = message_id
         self.user_id = user_id
@@ -36,9 +26,6 @@ class UnauthorizedMessageEditError(AppError):
 
 
 class MessageNotInChannelError(AppError):
-    status_code = status.HTTP_400_BAD_REQUEST
-    title = "Message Not In Channel"
-
     def __init__(self, message_id: int, channel_id: int):
         self.message_id = message_id
         self.channel_id = channel_id

@@ -14,7 +14,7 @@ class MessageService:
         """Creates a new message in the specified channel."""
 
         if not content or len(content) > 2000:
-            raise InvalidMessageContentError(content)
+            raise InvalidMessageContentError()
 
         logger.info(f'Creating message in channel with ID: "{channel_id}".')
 
@@ -31,7 +31,7 @@ class MessageService:
         """Edits an existing message with the given ID."""
 
         if not new_content or len(new_content) > 2000:
-            raise InvalidMessageContentError(new_content)
+            raise InvalidMessageContentError()
 
         logger.info(f'Editing message with ID: "{message_id}".')
 

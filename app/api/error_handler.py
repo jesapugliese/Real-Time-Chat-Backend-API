@@ -11,9 +11,6 @@ from app.api.errors.channel import (
 class ErrorHandler:
     """
     Class that provides centralized exception handling for the API.
-
-    Converts application exceptions into HTTP responses following the
-    RFC 7807 Problem Details format.
     """
 
     @staticmethod
@@ -41,19 +38,10 @@ class ErrorHandler:
     async def websocket_error_response(
         websocket: WebSocket,
         exc: AppError,
-        channel_id: int,
     ) -> None:
-        """Sends an RFC 7807 Problem Details response over a WebSocket."""
+        """Sends an error response over a WebSocket connection."""
 
-        await websocket.send_json(
-            {
-                "type": "about:blank",
-                "title": exc.title,
-                "status": exc.status_code,
-                "detail": exc.detail,
-                "instance": f"/channels/{channel_id}/ws",
-            }
-        )
+        await websocket.send_json({"error": exc.detail})
 
     @staticmethod
     def register_error_handlers(app) -> None:
