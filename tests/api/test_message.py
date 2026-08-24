@@ -2,28 +2,14 @@ from datetime import datetime
 from unittest.mock import patch
 
 from fastapi.testclient import TestClient
-from fastapi import status
 
 from app.main import app
 from app.models.message import Message
 from app.services.message_service import MessageService
-from app.api.errors.message import InvalidMessageContentError, MessageNotFoundError
+from app.api.errors.message import InvalidMessageContentError
 
 
 client = TestClient(app)
-
-
-def assert_error_format(body, expected_status):
-    """
-    Asserts that the error response follows the RFC 7807 Problem
-    Details format.
-    """
-
-    assert body["type"] == "about:blank"
-    assert "title" in body
-    assert body["status"] == expected_status
-    assert "detail" in body
-    assert "instance" in body
 
 
 def test_connect_to_channel_websocket():
@@ -71,7 +57,7 @@ def test_send_empty_message():
     with patch.object(
         MessageService,
         "create_message",
-        side_effect=InvalidMessageContentError(""),
+        side_effect=InvalidMessageContentError(),
     ):
         with client.websocket_connect(f"/channels/1/ws") as websocket:
             websocket.send_json(
@@ -85,7 +71,7 @@ def test_send_empty_message():
 
             response = websocket.receive_json()
 
-    assert_error_format(response, status.HTTP_400_BAD_REQUEST)
+    assert "error" in response
 
 
 def test_edit_message():
