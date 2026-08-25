@@ -16,5 +16,6 @@ class MessageResponse(BaseModel):
     createdAt: datetime
     editedAt: datetime | None = None
 
+
 class MessageListResponse(BaseModel):
     data: list[MessageResponse]
