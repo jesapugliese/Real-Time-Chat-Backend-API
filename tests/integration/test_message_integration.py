@@ -133,9 +133,9 @@ def test_get_messages_by_channel_integration():
 
     messages = get_messages_response.json()
 
-    assert len(messages) == 2
-    assert messages[0]["content"] == "First Message"
-    assert messages[1]["content"] == "Second Message"
+    assert len(messages["data"]) == 2
+    assert messages["data"][0]["content"] == "First Message"
+    assert messages["data"][1]["content"] == "Second Message"
 
 
 def test_not_get_messages_by_other_channels_integration():
@@ -179,11 +179,11 @@ def test_not_get_messages_by_other_channels_integration():
     messages_channel_1 = get_messages_response1.json()
     messages_channel_2 = get_messages_response2.json()
 
-    assert len(messages_channel_1) == 1
-    assert messages_channel_1[0]["content"] == "Message in Channel 1"
+    assert len(messages_channel_1["data"]) == 1
+    assert messages_channel_1["data"][0]["content"] == "Message in Channel 1"
 
-    assert len(messages_channel_2) == 1
-    assert messages_channel_2[0]["content"] == "Message in Channel 2"
+    assert len(messages_channel_2["data"]) == 1
+    assert messages_channel_2["data"][0]["content"] == "Message in Channel 2"
 
 
 def test_get_messages_by_channel_not_found():

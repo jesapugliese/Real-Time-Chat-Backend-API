@@ -3,7 +3,7 @@ from datetime import datetime
 from unittest.mock import patch
 
 from fastapi.testclient import TestClient
-from fastapi import WebSocketDisconnect
+from fastapi import WebSocketDisconnect, status
 
 from app.main import app
 from app.models.message import Message
@@ -207,7 +207,9 @@ def test_get_messages_by_channel():
         with client.websocket_connect(f"/channels/1/ws"):
             response = client.get("/channels/1/messages")
 
-    assert response.status_code == 200
-    assert len(response.json()) == 2
-    assert response.json()[0]["content"] == "Message 1"
-    assert response.json()[1]["content"] == "Message 2"
+    body = response.json()
+
+    assert response.status_code == status.HTTP_200_OK
+    assert len(body["data"]) == 2
+    assert body["data"][0]["content"] == "Message 1"
+    assert body["data"][1]["content"] == "Message 2"
