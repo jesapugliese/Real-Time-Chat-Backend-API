@@ -16,7 +16,10 @@ client = TestClient(app)
 
 
 def test_connect_to_channel_websocket():
-    with patch.object(ChannelService, "exists_by_id", return_value=True):
+    with (
+        patch.object(ChannelService, "exists_by_id", return_value=True),
+        patch.object(MessageService, "get_messages_by_channel", return_value=[]),
+    ):
         with client.websocket_connect(f"/channels/1/ws") as websocket:
             assert websocket is not None
 
@@ -36,6 +39,7 @@ def test_send_message():
                 editedAt=None,
             ),
         ) as mock_create_message,
+        patch.object(MessageService, "get_messages_by_channel", return_value=[]),
     ):
         with client.websocket_connect(f"/channels/1/ws") as websocket:
             websocket.send_json(
@@ -68,6 +72,7 @@ def test_send_empty_message():
             "create_message",
             side_effect=InvalidMessageContentError(),
         ),
+        patch.object(MessageService, "get_messages_by_channel", return_value=[]),
     ):
         with client.websocket_connect(f"/channels/1/ws") as websocket:
             websocket.send_json(
@@ -99,6 +104,7 @@ def test_edit_message():
                 editedAt=datetime(2026, 8, 23, 18, 5, 0),
             ),
         ) as mock_edit_message,
+        patch.object(MessageService, "get_messages_by_channel", return_value=[]),
     ):
         with client.websocket_connect(f"/channels/1/ws") as websocket:
             websocket.send_json(
@@ -138,6 +144,7 @@ def test_message_is_broadcasted_to_all_connected_clients():
                 editedAt=None,
             ),
         ),
+        patch.object(MessageService, "get_messages_by_channel", return_value=[]),
     ):
         with client.websocket_connect(f"/channels/1/ws") as websocket1:
             with client.websocket_connect(f"/channels/1/ws") as websocket2:
@@ -160,7 +167,10 @@ def test_message_is_broadcasted_to_all_connected_clients():
 
 
 def test_channel_not_found():
-    with patch.object(ChannelService, "exists_by_id", return_value=False):
+    with (
+        patch.object(ChannelService, "exists_by_id", return_value=False),
+        patch.object(MessageService, "get_messages_by_channel", return_value=[]),
+    ):
         with pytest.raises(WebSocketDisconnect) as exc:
             with client.websocket_connect(f"/channels/999/ws"):
                 pass
