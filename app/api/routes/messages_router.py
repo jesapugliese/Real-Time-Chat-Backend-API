@@ -3,6 +3,7 @@ from loguru import logger
 from app.schemas.message import (
     SendOrEditMessageEvent,
     MessageResponse,
+    MessageListResponse,
 )
 from app.services.message_service import MessageService
 from app.services.channel_service import ChannelService
@@ -99,21 +100,23 @@ async def channel_websocket(websocket: WebSocket, channelId: int):
     status_code=status.HTTP_200_OK,
     summary="Retrieve the message history of a channel",
 )
-def get_channel_messages(channelId: int) -> list[MessageResponse]:
+def get_channel_messages(channelId: int) -> MessageListResponse:
     """Retrieve the message history of a specific channel."""
 
     logger.info(f"Received request to retrieve messages for channel ID: {channelId}")
 
     messages = MessageService.get_messages_by_channel(channelId)
 
-    return [
-        MessageResponse(
-            id=message.id,
-            channelId=message.channelId,
-            authorId=message.authorId,
-            content=message.content,
-            createdAt=message.createdAt,
-            editedAt=message.editedAt,
-        )
-        for message in messages
-    ]
+    return MessageListResponse(
+        data=[
+            MessageResponse(
+                id=message.id,
+                channelId=message.channelId,
+                authorId=message.authorId,
+                content=message.content,
+                createdAt=message.createdAt,
+                editedAt=message.editedAt,
+            )
+            for message in messages
+        ]
+    )
