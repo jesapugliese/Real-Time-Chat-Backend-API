@@ -1,0 +1,124 @@
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #313338;
+    color: #f2f3f5;
+}
+
+.app {
+    display: flex;
+    height: 100vh;
+}
+
+.sidebar {
+    width: 220px;
+    padding: 20px 12px;
+    background: #2b2d31;
+}
+
+.sidebar h1 {
+    margin: 0 8px 20px;
+    font-size: 20px;
+}
+
+#channels {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.channel-button {
+    padding: 10px;
+    border: 0;
+    border-radius: 4px;
+    background: transparent;
+    color: #b5bac1;
+    text-align: left;
+    font-size: 15px;
+    cursor: pointer;
+}
+
+.channel-button:hover,
+.channel-button.active {
+    background: #404249;
+    color: #ffffff;
+}
+
+.main {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 60px;
+    padding: 0 20px;
+    border-bottom: 1px solid #232428;
+    font-weight: bold;
+}
+
+.channel-prefix {
+    color: #949ba4;
+    margin-right: 4px;
+}
+
+.status {
+    font-size: 13px;
+    font-weight: normal;
+}
+
+.status.connected {
+    color: #23a559;
+}
+
+.status.connecting {
+    color: #f0b232;
+}
+
+.status.disconnected {
+    color: #b5bac1;
+}
+
+.messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+}
+
+.message {
+    padding: 8px 0;
+}
+
+.message-author {
+    margin-right: 8px;
+    font-weight: bold;
+}
+
+.message-date {
+    color: #949ba4;
+    font-size: 12px;
+}
+
+.message-content {
+    margin-top: 4px;
+    color: #dbdee1;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.edited {
+    margin-left: 5px;
+    color: #949ba4;
+    font-size: 11px;
+}
+
+.empty-message {
+    color: #949ba4;
+}

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Discordia</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="app">
+    <aside class="sidebar">
+        <h1>Discordia</h1>
+
+        <nav id="channels"></nav>
+    </aside>
+
+    <main class="main">
+        <header class="header">
+            <div>
+                <span class="channel-prefix">#</span>
+                <span id="channelName">Select a channel</span>
+            </div>
+
+            <span id="connectionStatus" class="status disconnected">
+                Disconnected
+            </span>
+        </header>
+
+        <section id="messages" class="messages">
+            <p class="empty-message">Select a channel to view messages.</p>
+        </section>
+    </main>
+</div>
+
+<script src="js/app.js"></script>
+</body>
+</html>
