@@ -125,7 +125,7 @@ class MessageRepository:
                     SELECT id, channelId, authorId, content, createdAt, editedAt 
                     FROM messages 
                     WHERE channelId = %s
-                    ORDER BY createdAt ASC
+                    ORDER BY createdAt ASC, id ASC
                     """,
                     (channel_id,),
                 )
