@@ -14,6 +14,24 @@ from app.api.error_handler import ErrorHandler
 router = APIRouter(prefix="/channels")
 
 
+async def send_history(channelId: int, websocket: WebSocket):
+    """Sends the message history to the connected WebSocket client."""
+
+    messages = MessageService.get_messages_by_channel(channelId)
+
+    for message in messages:
+        response = MessageResponse(
+            id=message.id,
+            channelId=message.channelId,
+            authorId=message.authorId,
+            content=message.content,
+            createdAt=message.createdAt,
+            editedAt=message.editedAt,
+        )
+
+        await websocket.send_json(response.model_dump(mode="json"))
+
+
 @router.websocket("/{channelId}/ws")
 async def channel_websocket(websocket: WebSocket, channelId: int):
     """WebSocket endpoint for a specific channel."""
@@ -28,6 +46,8 @@ async def channel_websocket(websocket: WebSocket, channelId: int):
     await websocket_manager.connect(channelId, websocket)
 
     try:
+        await send_history(channelId, websocket)
+
         while True:
             try:
                 data = await websocket.receive_json()

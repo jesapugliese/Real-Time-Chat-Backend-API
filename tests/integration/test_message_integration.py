@@ -185,6 +185,7 @@ def test_not_get_messages_by_other_channels_integration():
     assert len(messages_channel_2) == 1
     assert messages_channel_2[0]["content"] == "Message in Channel 2"
 
+
 def test_get_messages_by_channel_not_found():
     with TestClient(app) as client:
         with client.websocket_connect(f"/channels/1/ws"):
