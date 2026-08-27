@@ -195,6 +195,7 @@ def test_get_messages_by_channel_not_found():
 
     assert_error_format(response.json(), status.HTTP_404_NOT_FOUND)
 
+
 def test_connect_to_nonexistent_channel():
     with TestClient(app) as client:
         with pytest.raises(WebSocketDisconnect) as exc:
