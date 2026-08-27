@@ -5,6 +5,7 @@ from app.database.database import Database
 from app.api.error_handler import ErrorHandler
 from app.config.logging import configure_logging
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 
 @asynccontextmanager
@@ -26,3 +27,5 @@ app.add_middleware(
 
 ErrorHandler.register_error_handlers(app)
 app.include_router(router)
+
+app.mount("/public", StaticFiles(directory="public", html=True), name="public")
