@@ -6,10 +6,14 @@ const messagesContainer = document.getElementById("messages");
 const channelName = document.getElementById("channelName");
 const connectionStatus = document.getElementById("connectionStatus");
 
+const channelForm = document.getElementById("channelForm");
+const channelInput = document.getElementById("channelInput");
+
 let websocket = null;
 let currentChannelId = null;
 
 const messages = new Map();
+
 
 async function loadChannels() {
     try {
@@ -22,75 +26,65 @@ async function loadChannels() {
         const result = await response.json();
 
         renderChannels(result.data);
+
     } catch (error) {
-        console.error("Error at loading channels:", error);
+        console.error("Error loading channels:", error);
 
         channelsContainer.innerHTML = "";
 
         const errorMessage = document.createElement("p");
         errorMessage.className = "empty-message";
-        errorMessage.textContent = "Error at loading channels.";
+        errorMessage.textContent = "Error loading channels.";
 
         channelsContainer.appendChild(errorMessage);
     }
 }
 
+
 function renderChannels(channels) {
     channelsContainer.innerHTML = "";
 
+    if (channels.length === 0) {
+        const emptyMessage = document.createElement("p");
+        emptyMessage.className = "empty-message";
+        emptyMessage.textContent = "No channels available.";
+
+        channelsContainer.appendChild(emptyMessage);
+        return;
+    }
+
     channels.forEach(channel => {
-        const button = document.createElement("button");
+        const item = document.createElement("div");
 
-        button.className = "channel-button";
-        button.textContent = `# ${channel.name}`;
+        item.className = "channel-item";
+        item.textContent = `# ${channel.name} (ID: ${channel.id})`;
 
-        button.addEventListener("click", () => {
-            selectChannel(channel);
-        });
-
-        channelsContainer.appendChild(button);
+        channelsContainer.appendChild(item);
     });
 }
 
-async function selectChannel(channel) {
-    currentChannelId = channel.id;
 
-    closeWebSocket();
+channelForm.addEventListener("submit", event => {
+    event.preventDefault();
 
-    channelName.textContent = channel.name;
+    const channelId = parseInt(channelInput.value, 10);
 
-    document.querySelectorAll(".channel-button").forEach(button => {
-        button.classList.remove("active");
-    });
-
-    const selectedButton = [...document.querySelectorAll(".channel-button")]
-        .find(button => button.textContent === `# ${channel.name}`);
-
-    if (selectedButton) {
-        selectedButton.classList.add("active");
+    if (isNaN(channelId)) {
+        alert("Please enter a valid channel ID.");
+        return;
     }
 
     messages.clear();
     messagesContainer.innerHTML = "";
 
-    setConnectionStatus("connecting");
+    closeWebSocket();
 
-    try {
-        connectWebSocket(channel.id);
-    } catch (error) {
-        console.error("Error at loading history:", error);
+    currentChannelId = channelId;
+    channelName.textContent = `Channel ID: ${channelId}`;
 
-        messagesContainer.innerHTML = "";
+    connectWebSocket(channelId);
+});
 
-        const errorMessage = document.createElement("p");
-        errorMessage.className = "empty-message";
-        errorMessage.textContent = "Error at loading history.";
-
-        messagesContainer.appendChild(errorMessage);
-
-        setConnectionStatus("disconnected");
-    }
-}
 
 function connectWebSocket(channelId) {
     const url = `${WS_BASE_URL}/channels/${channelId}/ws`;
@@ -102,7 +96,7 @@ function connectWebSocket(channelId) {
     websocket = socket;
 
     socket.addEventListener("open", () => {
-        if (socket !== websocket || currentChannelId !== channelId) {
+        if (socket !== websocket) {
             return;
         }
 
@@ -110,6 +104,7 @@ function connectWebSocket(channelId) {
 
         setConnectionStatus("connected");
     });
+
 
     socket.addEventListener("message", event => {
         if (socket !== websocket || currentChannelId !== channelId) {
@@ -127,7 +122,7 @@ function connectWebSocket(channelId) {
 
             const isNewMessage = !messages.has(message.id);
 
-            addOrUpdateMessage(message, true);
+            addOrUpdateMessage(message);
 
             if (isNewMessage) {
                 scrollToBottom();
@@ -138,16 +133,37 @@ function connectWebSocket(channelId) {
         }
     });
 
-    socket.addEventListener("close", () => {
+
+    socket.addEventListener("close", event => {
         if (socket !== websocket) {
             return;
         }
 
-        console.log(`WebSocket disconnected from channel ${channelId}`);
+        console.log(
+            `WebSocket disconnected from channel ${channelId}. ` +
+            `Code: ${event.code}, ` +
+            `Reason: ${event.reason || "No reason provided"}`
+        );
 
         websocket = null;
         setConnectionStatus("disconnected");
+
+        if (event.code === 1008) {
+            channelName.textContent = "Select a channel";
+
+            messagesContainer.innerHTML = "";
+
+            const errorMessage = document.createElement("p");
+            errorMessage.className = "empty-message";
+            errorMessage.textContent =
+                `Channel ${channelId} does not exist.`;
+
+            messagesContainer.appendChild(errorMessage);
+
+            currentChannelId = null;
+        }
     });
+
 
     socket.addEventListener("error", error => {
         if (socket !== websocket) {
@@ -160,6 +176,7 @@ function connectWebSocket(channelId) {
     });
 }
 
+
 function closeWebSocket() {
     if (websocket !== null) {
         websocket.close();
@@ -169,7 +186,8 @@ function closeWebSocket() {
     setConnectionStatus("disconnected");
 }
 
-function addOrUpdateMessage(message, scroll = false) {
+
+function addOrUpdateMessage(message) {
     const existingElement = messages.get(message.id);
 
     if (existingElement) {
@@ -181,11 +199,8 @@ function addOrUpdateMessage(message, scroll = false) {
 
     messages.set(message.id, element);
     messagesContainer.appendChild(element);
-
-    if (scroll) {
-        scrollToBottom();
-    }
 }
+
 
 function createMessageElement(message) {
     const element = document.createElement("article");
@@ -198,9 +213,11 @@ function createMessageElement(message) {
     return element;
 }
 
+
 function updateMessageElement(element, message) {
     renderMessageElement(element, message);
 }
+
 
 function renderMessageElement(element, message) {
     element.innerHTML = "";
@@ -234,9 +251,11 @@ function renderMessageElement(element, message) {
     element.appendChild(content);
 }
 
+
 function scrollToBottom() {
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }
+
 
 function formatDate(date) {
     if (!date) {
@@ -252,6 +271,7 @@ function formatDate(date) {
     return parsedDate.toLocaleString("es-AR");
 }
 
+
 function setConnectionStatus(status) {
     connectionStatus.className = `status ${status}`;
 
@@ -263,5 +283,6 @@ function setConnectionStatus(status) {
         connectionStatus.textContent = "Disconnected";
     }
 }
+
 
 loadChannels();

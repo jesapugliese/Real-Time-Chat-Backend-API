@@ -15,37 +15,75 @@ body {
 }
 
 .sidebar {
-    width: 220px;
+    width: 300px;
     padding: 20px 12px;
     background: #2b2d31;
 }
 
 .sidebar h1 {
-    margin: 0 8px 20px;
+    margin: 0 8px 24px;
     font-size: 20px;
+}
+
+.sidebar h2 {
+    margin: 20px 8px 10px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #949ba4;
+    text-transform: uppercase;
+}
+
+#channelForm {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin: 0 8px;
+}
+
+#channelInput {
+    padding: 9px 10px;
+    border: 1px solid #1e1f22;
+    border-radius: 4px;
+    outline: none;
+    background: #1e1f22;
+    color: #f2f3f5;
+    font-size: 14px;
+}
+
+#channelInput:focus {
+    border-color: #5865f2;
+}
+
+#channelForm button {
+    padding: 9px;
+    border: none;
+    border-radius: 4px;
+    background: #5865f2;
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+#channelForm button:hover {
+    background: #4752c4;
 }
 
 #channels {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 3px;
 }
 
-.channel-button {
-    padding: 10px;
-    border: 0;
+.channel-item {
+    padding: 7px 10px;
     border-radius: 4px;
-    background: transparent;
     color: #b5bac1;
-    text-align: left;
-    font-size: 15px;
-    cursor: pointer;
+    font-size: 14px;
 }
 
-.channel-button:hover,
-.channel-button.active {
-    background: #404249;
-    color: #ffffff;
+.channel-item:hover {
+    background: #313338;
 }
 
 .main {
@@ -65,8 +103,8 @@ body {
 }
 
 .channel-prefix {
-    color: #949ba4;
     margin-right: 4px;
+    color: #949ba4;
 }
 
 .status {
