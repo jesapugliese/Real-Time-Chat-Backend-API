@@ -2,6 +2,8 @@ from app.main import app
 from app.repositories.message_repository import MessageRepository
 from fastapi import status
 from fastapi.testclient import TestClient
+from fastapi import WebSocketDisconnect
+import pytest
 
 
 def assert_error_format(body, status_code):
@@ -192,3 +194,11 @@ def test_get_messages_by_channel_not_found():
             response = client.get("/channels/999/messages")
 
     assert_error_format(response.json(), status.HTTP_404_NOT_FOUND)
+
+def test_connect_to_nonexistent_channel():
+    with TestClient(app) as client:
+        with pytest.raises(WebSocketDisconnect) as exc:
+            with client.websocket_connect(f"/channels/999/ws"):
+                pass
+
+    assert exc.value.code == 1008
