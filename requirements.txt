@@ -1,6 +1,7 @@
 fastapi
 uvicorn[standard]
 psycopg[binary]
+psycopg-pool
 pytest
 httpx2
 loguru

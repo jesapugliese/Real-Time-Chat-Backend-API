@@ -40,13 +40,13 @@ def test_send_message_integration():
 
             response = websocket.receive_json()
 
+        persisted_message = MessageRepository.find_by_id(response["id"])
+
     assert response["id"] is not None
     assert response["authorId"] == 1
     assert response["content"] == "Message Integration Test"
     assert response["createdAt"] is not None
     assert response["editedAt"] is None
-
-    persisted_message = MessageRepository.find_by_id(response["id"])
 
     assert persisted_message is not None
     assert persisted_message.id == response["id"]
@@ -87,13 +87,13 @@ def test_edit_message_integration():
 
             edit_response = websocket.receive_json()
 
+        persisted_message = MessageRepository.find_by_id(message_id)
+
     assert edit_response["id"] == message_id
     assert edit_response["authorId"] == 1
     assert edit_response["content"] == "Edited Message"
     assert edit_response["createdAt"] is not None
     assert edit_response["editedAt"] is not None
-
-    persisted_message = MessageRepository.find_by_id(message_id)
 
     assert persisted_message is not None
     assert persisted_message.id == message_id

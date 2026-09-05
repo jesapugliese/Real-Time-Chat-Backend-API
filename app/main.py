@@ -13,6 +13,7 @@ async def lifespan(app: FastAPI):
     configure_logging()
     Database.init_db()
     yield
+    Database.close_pool()
 
 
 app = FastAPI(lifespan=lifespan)

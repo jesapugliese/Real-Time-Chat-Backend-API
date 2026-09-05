@@ -10,9 +10,7 @@ class MessageRepository:
         and content, and returns the created Message object.
         """
 
-        db_conn = Database.get_connection()
-
-        try:
+        with Database.pool.connection() as db_conn:
             with db_conn.cursor() as cursor:
                 cursor.execute(
                     """
@@ -24,7 +22,6 @@ class MessageRepository:
                 )
 
                 message = cursor.fetchone()
-                db_conn.commit()
 
                 return Message(
                     id=message[0],
@@ -34,8 +31,6 @@ class MessageRepository:
                     createdAt=message[4],
                     editedAt=message[5],
                 )
-        finally:
-            db_conn.close()
 
     @staticmethod
     def find_by_id(message_id: int) -> Message | None:
@@ -44,9 +39,7 @@ class MessageRepository:
         otherwise None.
         """
 
-        db_conn = Database.get_connection()
-
-        try:
+        with Database.pool.connection() as db_conn:
             with db_conn.cursor() as cursor:
                 cursor.execute(
                     """
@@ -71,8 +64,6 @@ class MessageRepository:
                     if message
                     else None
                 )
-        finally:
-            db_conn.close()
 
     @staticmethod
     def update(message_id: int, new_content: str) -> Message:
@@ -81,9 +72,7 @@ class MessageRepository:
         updated Message object.
         """
 
-        db_conn = Database.get_connection()
-
-        try:
+        with Database.pool.connection() as db_conn:
             with db_conn.cursor() as cursor:
                 cursor.execute(
                     """
@@ -96,7 +85,6 @@ class MessageRepository:
                 )
 
                 message = cursor.fetchone()
-                db_conn.commit()
 
                 return Message(
                     id=message[0],
@@ -106,8 +94,6 @@ class MessageRepository:
                     createdAt=message[4],
                     editedAt=message[5],
                 )
-        finally:
-            db_conn.close()
 
     @staticmethod
     def find_by_channel_id(channel_id: int) -> list[Message]:
@@ -116,9 +102,7 @@ class MessageRepository:
         Message objects.
         """
 
-        db_conn = Database.get_connection()
-
-        try:
+        with Database.pool.connection() as db_conn:
             with db_conn.cursor() as cursor:
                 cursor.execute(
                     """
@@ -143,5 +127,3 @@ class MessageRepository:
                     )
                     for message in messages
                 ]
-        finally:
-            db_conn.close()
