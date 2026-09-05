@@ -10,9 +10,7 @@ class ChannelRepository:
         Channel object.
         """
 
-        db_conn = Database.get_connection()
-
-        try:
+        with Database.pool.connection() as db_conn:
             with db_conn.cursor() as cursor:
                 cursor.execute(
                     """
@@ -24,11 +22,8 @@ class ChannelRepository:
                 )
 
                 channel = cursor.fetchone()
-                db_conn.commit()
 
                 return Channel(id=channel[0], name=channel[1], createdAt=channel[2])
-        finally:
-            db_conn.close()
 
     @staticmethod
     def find_by_name_ci(channel_name: str) -> Channel | None:
@@ -37,9 +32,7 @@ class ChannelRepository:
         object if found, otherwise None.
         """
 
-        db_conn = Database.get_connection()
-
-        try:
+        with Database.pool.connection() as db_conn:
             with db_conn.cursor() as cursor:
                 cursor.execute(
                     """
@@ -57,8 +50,6 @@ class ChannelRepository:
                     if channel
                     else None
                 )
-        finally:
-            db_conn.close()
 
     @staticmethod
     def get_all() -> list[Channel]:
@@ -67,9 +58,7 @@ class ChannelRepository:
         Channel objects, ordered by creation date in ascending order.
         """
 
-        db_conn = Database.get_connection()
-
-        try:
+        with Database.pool.connection() as db_conn:
             with db_conn.cursor() as cursor:
                 cursor.execute(
                     """
@@ -85,8 +74,6 @@ class ChannelRepository:
                     Channel(id=channel[0], name=channel[1], createdAt=channel[2])
                     for channel in channels
                 ]
-        finally:
-            db_conn.close()
 
     @staticmethod
     def exists_by_id(channel_id: int) -> bool:
@@ -95,9 +82,7 @@ class ChannelRepository:
         Returns True if it exists, otherwise False.
         """
 
-        db_conn = Database.get_connection()
-
-        try:
+        with Database.pool.connection() as db_conn:
             with db_conn.cursor() as cursor:
                 cursor.execute(
                     """
@@ -109,5 +94,3 @@ class ChannelRepository:
                 )
 
                 return cursor.fetchone() is not None
-        finally:
-            db_conn.close()

@@ -1,37 +1,46 @@
 from loguru import logger
 import os
-import psycopg
+from psycopg_pool import ConnectionPool
 
 
+# TODO: Close the connection pool when the application shuts down
 class Database:
-    @staticmethod
-    def get_connection() -> psycopg.Connection:
-        """Establishes and returns a new database connection."""
-
-        return psycopg.connect(
-            host=os.getenv("DATABASE_HOST"),
-            port=os.getenv("DATABASE_PORT"),
-            dbname=os.getenv("DATABASE_NAME"),
-            user=os.getenv("DATABASE_USER"),
-            password=os.getenv("DATABASE_PASSWORD"),
-        )
+    pool: ConnectionPool | None = None
 
     @staticmethod
     def init_db():
-        """Initializes the database by creating necessary tables."""
+        """Initializes the database."""
 
         logger.info("Initializing database.")
+        Database.__init_connection_pool()
         Database.__init_channels_table()
         Database.__init_messages_table()
         logger.info("Database initialized successfully.")
 
     @staticmethod
+    def __init_connection_pool():
+        logger.info("Initializing database connection pool.")
+
+        try:
+            Database.pool = ConnectionPool(
+                conninfo=f"host={os.getenv('DATABASE_HOST')} "
+                f"port={os.getenv('DATABASE_PORT')} "
+                f"dbname={os.getenv('DATABASE_NAME')} "
+                f"user={os.getenv('DATABASE_USER')} "
+                f"password={os.getenv('DATABASE_PASSWORD')}",
+                open=True,
+            )
+
+            Database.pool.wait()
+        except Exception as e:
+            logger.error(f"Failed to initialize database connection pool: {e}")
+            raise
+
+    @staticmethod
     def __init_channels_table():
         logger.info("Initializing channels table.")
 
-        db_conn = Database.get_connection()
-
-        try:
+        with Database.pool.connection() as db_conn:
             with db_conn.cursor() as cursor:
                 cursor.execute(
                     """
@@ -46,17 +55,11 @@ class Database:
                     """
                 )
 
-            db_conn.commit()
-        finally:
-            db_conn.close()
-
     @staticmethod
     def __init_messages_table():
         logger.info("Initializing messages table.")
 
-        db_conn = Database.get_connection()
-
-        try:
+        with Database.pool.connection() as db_conn:
             with db_conn.cursor() as cursor:
                 cursor.execute(
                     """
@@ -71,6 +74,12 @@ class Database:
                     """
                 )
 
-            db_conn.commit()
-        finally:
-            db_conn.close()
+    @staticmethod
+    def close_pool():
+        """Closes the database connection pool."""
+
+        if Database.pool:
+            logger.info("Closing database connection pool.")
+            Database.pool.close()
+            Database.pool = None
+            logger.info("Database connection pool closed.")
