@@ -2,6 +2,7 @@ from fastapi.testclient import TestClient
 from app.main import app
 from unittest.mock import patch
 from app.services.channel_service import ChannelService
+from app.repositories.channel_repository import ChannelRepository
 from app.models.channel import Channel
 from datetime import datetime
 from fastapi import status
@@ -103,3 +104,15 @@ def test_list_channels_empty():
     body = response.json()
 
     assert len(body["data"]) == 0
+
+
+def test_create_channel_with_only_spaces():
+    channel_name = "   "
+    response = client.post("/channels", json={"name": channel_name})
+    assert_error_format(response.json())
+
+
+def test_create_channel_exceeding_max_length():
+    channel_name = "A" * 51
+    response = client.post("/channels", json={"name": channel_name})
+    assert_error_format(response.json())
