@@ -16,7 +16,7 @@ class MessageService:
     def create_message(channel_id: int, author_id: int, content: str):
         """Creates a new message in the specified channel."""
 
-        if not content or len(content) > 2000:
+        if not content.strip() or len(content) > 2000:
             raise InvalidMessageContentError()
 
         logger.info(f'Creating message in channel with ID: "{channel_id}".')
@@ -33,7 +33,7 @@ class MessageService:
     ):
         """Edits an existing message with the given ID."""
 
-        if not new_content or len(new_content) > 2000:
+        if not new_content.strip() or len(new_content) > 2000:
             raise InvalidMessageContentError()
 
         logger.info(f'Editing message with ID: "{message_id}".')

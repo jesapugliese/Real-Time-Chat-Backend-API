@@ -244,3 +244,55 @@ def test_websocket_message_with_null_character():
             response = websocket.receive_json()
 
             assert "error" in response
+
+
+def test_send_message_with_only_spaces():
+    with (
+        patch.object(ChannelService, "exists_by_id", return_value=True),
+        patch.object(
+            MessageService,
+            "create_message",
+            side_effect=InvalidMessageContentError(),
+        ),
+        patch.object(MessageService, "get_messages_by_channel", return_value=[]),
+    ):
+        with client.websocket_connect(f"/channels/1/ws") as websocket:
+            websocket.send_json(
+                {
+                    "id": None,
+                    "channelId": 1,
+                    "authorId": 1,
+                    "content": "     ",
+                }
+            )
+
+            response = websocket.receive_json()
+
+    assert "error" in response
+
+
+def test_send_message_exceeding_max_length():
+    long_content = "a" * 2001
+
+    with (
+        patch.object(ChannelService, "exists_by_id", return_value=True),
+        patch.object(
+            MessageService,
+            "create_message",
+            side_effect=InvalidMessageContentError(),
+        ),
+        patch.object(MessageService, "get_messages_by_channel", return_value=[]),
+    ):
+        with client.websocket_connect(f"/channels/1/ws") as websocket:
+            websocket.send_json(
+                {
+                    "id": None,
+                    "channelId": 1,
+                    "authorId": 1,
+                    "content": long_content,
+                }
+            )
+
+            response = websocket.receive_json()
+
+    assert "error" in response
