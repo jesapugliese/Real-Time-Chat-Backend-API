@@ -249,11 +249,6 @@ def test_websocket_message_with_null_character():
 def test_send_message_with_only_spaces():
     with (
         patch.object(ChannelService, "exists_by_id", return_value=True),
-        patch.object(
-            MessageService,
-            "create_message",
-            side_effect=InvalidMessageContentError(),
-        ),
         patch.object(MessageService, "get_messages_by_channel", return_value=[]),
     ):
         with client.websocket_connect(f"/channels/1/ws") as websocket:
@@ -276,11 +271,6 @@ def test_send_message_exceeding_max_length():
 
     with (
         patch.object(ChannelService, "exists_by_id", return_value=True),
-        patch.object(
-            MessageService,
-            "create_message",
-            side_effect=InvalidMessageContentError(),
-        ),
         patch.object(MessageService, "get_messages_by_channel", return_value=[]),
     ):
         with client.websocket_connect(f"/channels/1/ws") as websocket:
