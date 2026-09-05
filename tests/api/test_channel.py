@@ -63,9 +63,11 @@ def test_create_channel_too_long_name():
 
 def test_create_channel_already_exists():
     with patch.object(
-        ChannelService,
-        "create_channel",
-        side_effect=ChannelAlreadyExistsError("Test Channel"),
+        ChannelRepository,
+        "find_by_name_ci",
+        return_value=Channel(
+            id=1, name="Test Channel", createdAt=datetime(2026, 8, 23, 18, 0, 0)
+        ),
     ):
         response = client.post("/channels", json={"name": "Test Channel"})
 
@@ -108,11 +110,7 @@ def test_list_channels_empty():
 
 def test_create_channel_with_only_spaces():
     channel_name = "   "
-    response = client.post("/channels", json={"name": channel_name})
-    assert_error_format(response.json())
 
-
-def test_create_channel_exceeding_max_length():
-    channel_name = "A" * 51
     response = client.post("/channels", json={"name": channel_name})
+
     assert_error_format(response.json())
