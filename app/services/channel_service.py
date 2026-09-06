@@ -9,7 +9,7 @@ class ChannelService:
     def create_channel(channel_name: str) -> Channel:
         """Creates a new channel with the given name."""
 
-        if not channel_name or len(channel_name) < 1 or len(channel_name) > 50:
+        if not channel_name.strip() or len(channel_name) < 1 or len(channel_name) > 50:
             raise InvalidChannelNameError(channel_name)
 
         logger.info(f'Creating channel with name: "{channel_name}"')

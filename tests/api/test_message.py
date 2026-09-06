@@ -213,3 +213,76 @@ def test_get_messages_by_channel():
     assert len(body["data"]) == 2
     assert body["data"][0]["content"] == "Message 1"
     assert body["data"][1]["content"] == "Message 2"
+
+
+def test_websocket_invalid_json():
+    with (
+        patch.object(ChannelService, "exists_by_id", return_value=True),
+        patch.object(MessageService, "get_messages_by_channel", return_value=[]),
+    ):
+        with client.websocket_connect("/channels/1/ws") as websocket:
+            websocket.send_text('{"authorId": 1, "content": "Hola"')
+
+            response = websocket.receive_json()
+
+            assert "error" in response
+
+
+def test_websocket_message_with_null_character():
+    with (
+        patch.object(ChannelService, "exists_by_id", return_value=True),
+        patch.object(MessageService, "get_messages_by_channel", return_value=[]),
+    ):
+        with client.websocket_connect("/channels/1/ws") as websocket:
+            websocket.send_json(
+                {
+                    "authorId": 1,
+                    "content": "Hola\x00mundo",
+                }
+            )
+
+            response = websocket.receive_json()
+
+            assert "error" in response
+
+
+def test_send_message_with_only_spaces():
+    with (
+        patch.object(ChannelService, "exists_by_id", return_value=True),
+        patch.object(MessageService, "get_messages_by_channel", return_value=[]),
+    ):
+        with client.websocket_connect(f"/channels/1/ws") as websocket:
+            websocket.send_json(
+                {
+                    "id": None,
+                    "channelId": 1,
+                    "authorId": 1,
+                    "content": "     ",
+                }
+            )
+
+            response = websocket.receive_json()
+
+    assert "error" in response
+
+
+def test_send_message_exceeding_max_length():
+    long_content = "a" * 2001
+
+    with (
+        patch.object(ChannelService, "exists_by_id", return_value=True),
+        patch.object(MessageService, "get_messages_by_channel", return_value=[]),
+    ):
+        with client.websocket_connect(f"/channels/1/ws") as websocket:
+            websocket.send_json(
+                {
+                    "id": None,
+                    "channelId": 1,
+                    "authorId": 1,
+                    "content": long_content,
+                }
+            )
+
+            response = websocket.receive_json()
+
+    assert "error" in response

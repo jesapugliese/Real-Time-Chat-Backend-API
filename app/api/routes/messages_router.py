@@ -1,5 +1,7 @@
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect, status
 from loguru import logger
+import json
+from pydantic import ValidationError
 from app.schemas.message import (
     SendOrEditMessageEvent,
     MessageResponse,
@@ -10,6 +12,7 @@ from app.services.channel_service import ChannelService
 from app.api.websocket_manager import websocket_manager
 from app.api.errors.app_error import AppError
 from app.api.error_handler import ErrorHandler
+from app.api.errors.message import InvalidJSONFormatError, InvalidMessageDataError
 
 
 router = APIRouter(prefix="/channels")
@@ -51,13 +54,21 @@ async def channel_websocket(websocket: WebSocket, channelId: int):
 
         while True:
             try:
-                data = await websocket.receive_json()
+                data = await websocket.receive_text()
+
+                try:
+                    data = json.loads(data)
+                except json.JSONDecodeError:
+                    raise InvalidJSONFormatError()
 
                 logger.info(
                     f"Received data from WebSocket for channel ID: {channelId}: {data}"
                 )
 
-                event = SendOrEditMessageEvent(**data)
+                try:
+                    event = SendOrEditMessageEvent(**data)
+                except ValidationError:
+                    raise InvalidMessageDataError()
 
                 if event.id is None:
                     message = MessageService.create_message(

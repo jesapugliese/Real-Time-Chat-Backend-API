@@ -2,6 +2,18 @@ from fastapi import status
 from app.api.errors.app_error import AppError
 
 
+class InvalidJSONFormatError(AppError):
+    def __init__(self):
+        self.detail = "Invalid JSON format."
+        super().__init__(self.detail)
+
+
+class InvalidMessageDataError(AppError):
+    def __init__(self):
+        self.detail = "Invalid message data."
+        super().__init__(self.detail)
+
+
 class InvalidMessageContentError(AppError):
     def __init__(self):
         self.detail = (

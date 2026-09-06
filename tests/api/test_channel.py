@@ -2,6 +2,7 @@ from fastapi.testclient import TestClient
 from app.main import app
 from unittest.mock import patch
 from app.services.channel_service import ChannelService
+from app.repositories.channel_repository import ChannelRepository
 from app.models.channel import Channel
 from datetime import datetime
 from fastapi import status
@@ -62,9 +63,11 @@ def test_create_channel_too_long_name():
 
 def test_create_channel_already_exists():
     with patch.object(
-        ChannelService,
-        "create_channel",
-        side_effect=ChannelAlreadyExistsError("Test Channel"),
+        ChannelRepository,
+        "find_by_name_ci",
+        return_value=Channel(
+            id=1, name="Test Channel", createdAt=datetime(2026, 8, 23, 18, 0, 0)
+        ),
     ):
         response = client.post("/channels", json={"name": "Test Channel"})
 
@@ -103,3 +106,11 @@ def test_list_channels_empty():
     body = response.json()
 
     assert len(body["data"]) == 0
+
+
+def test_create_channel_with_only_spaces():
+    channel_name = "   "
+
+    response = client.post("/channels", json={"name": channel_name})
+
+    assert_error_format(response.json())
