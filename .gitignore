@@ -1,4 +1,6 @@
 .env
-data/
+.env.test
+.env.example
+__pycache__/
 .pytest_cache/
-tests/api/__pycache__/
+.ruff_cache/

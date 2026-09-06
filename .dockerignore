@@ -1,0 +1,8 @@
+.env
+.env.test
+.env.example
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+Makefile
+.gitignore
