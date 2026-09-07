@@ -34,6 +34,7 @@ En el presente trabajo se desarrolló un servicio backend de chat mínimo que ex
 - **Página HTML**: se desarrolló una interfaz mínima en la carpeta `/public` para demostrar el funcionamiento del WebSocket y visualizar los mensajes y sus ediciones en tiempo real.  
 - **Makefile**: se incorporó para facilitar la ejecución de los principales comandos del proyecto, como iniciar y detener los servicios mediante Docker Compose, así como para correr los tests.  
 - **Formateo del código**: se utilizo `ruff` para formatear el código. 
+- **Pool de conexiones**: se implementó un pool de conexiones para PostgreSQL, permitiendo reutilizar conexiones a la base de datos y gestionar de manera eficiente múltiples solicitudes concurrentes. 
 
 ## Arquitectura
 
@@ -49,9 +50,7 @@ Los siguientes endpoints los implementé sin mayor problema, pero el siguiente g
 
 ## Posibles Mejoras
 
-Dado que me tomó mucho tiempo realizar el trabajo práctico, y que es la primera vez que implemento en un proyecto la persistencia en una base de datos, considero que la misma pudo haber sido implementada de manera más eficiente. Actualmente se abre y cierra la conexión por cada endpoint, pero en futuros proyectos me gustaría investigar otras formas de realizar consultas a la base de datos manteniendo, de alguna forma, la conexión abierta. Incluso me gustaría investigar sobre la seguridad del acceso de la implementación actual, y según el caso mejorarla.  
-
-Otra posible mejora es implementar un pipeline de Integración Continua automatizado mediante GitHub Actions. En proyectos futuros me gustaría implementarlo, aunque en este no pude por falta de tiempo.  
+Una posible mejora a la solución es implementar un pipeline de Integración Continua automatizado mediante GitHub Actions.  
 
 ## Pre-requisitos
 
