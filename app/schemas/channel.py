@@ -1,9 +1,16 @@
 from datetime import datetime
-from pydantic import BaseModel, field_serializer
+from pydantic import BaseModel, field_serializer, field_validator
 
 
 class ChannelCreateRequest(BaseModel):
     name: str
+
+    @field_validator("name")
+    @classmethod
+    def validate_name(cls, value: str) -> str:
+        if "\x00" in value:
+            raise ValueError("Name must not contain null characters.")
+        return value
 
 
 class ChannelResponse(BaseModel):

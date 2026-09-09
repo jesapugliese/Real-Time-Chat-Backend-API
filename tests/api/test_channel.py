@@ -12,7 +12,7 @@ from app.api.errors.channel import ChannelAlreadyExistsError, InvalidChannelName
 client = TestClient(app)
 
 
-def assert_error_format(body):
+def assert_error_format(body, expected_status: int = status.HTTP_400_BAD_REQUEST):
     """
     Asserts that the error response follows the RFC 7807 Problem
     Details format.
@@ -20,7 +20,7 @@ def assert_error_format(body):
 
     assert body["type"] == "about:blank"
     assert "title" in body
-    assert body["status"] == status.HTTP_400_BAD_REQUEST
+    assert body["status"] == expected_status
     assert "detail" in body
     assert "instance" in body
 
@@ -114,3 +114,11 @@ def test_create_channel_with_only_spaces():
     response = client.post("/channels", json={"name": channel_name})
 
     assert_error_format(response.json())
+
+
+def test_channel_name_with_null_character():
+    channel_name = "Channel\x00Name"
+
+    response = client.post("/channels", json={"name": channel_name})
+
+    assert_error_format(response.json(), status.HTTP_422_UNPROCESSABLE_CONTENT)
