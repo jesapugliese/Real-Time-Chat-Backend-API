@@ -1,10 +1,14 @@
 from datetime import datetime
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, Field, field_validator
+
+
+INT32_MIN = -2_147_483_648
+INT32_MAX = 2_147_483_647
 
 
 class SendOrEditMessageEvent(BaseModel):
-    id: int | None = None
-    authorId: int
+    id: int | None = Field(default=None, ge=INT32_MIN, le=INT32_MAX)
+    authorId: int = Field(..., ge=INT32_MIN, le=INT32_MAX)
     content: str
 
     @field_validator("content")

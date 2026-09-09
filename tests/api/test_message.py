@@ -286,3 +286,61 @@ def test_send_message_exceeding_max_length():
             response = websocket.receive_json()
 
     assert "error" in response
+
+
+def test_id_out_of_bounds():
+    with (
+        patch.object(ChannelService, "exists_by_id", return_value=True),
+        patch.object(MessageService, "get_messages_by_channel", return_value=[]),
+    ):
+        with client.websocket_connect(f"/channels/1/ws") as websocket:
+            websocket.send_json(
+                {
+                    "id": 2_147_483_648,
+                    "channelId": 1,
+                    "authorId": 1,
+                    "content": "This a message",
+                }
+            )
+            response = websocket.receive_json()
+            assert "error" in response
+
+            websocket.send_json(
+                {
+                    "id": -2_147_483_649,
+                    "channelId": 1,
+                    "authorId": 1,
+                    "content": "This a message",
+                }
+            )
+            response = websocket.receive_json()
+            assert "error" in response
+
+
+def test_authorId_out_of_bounds():
+    with (
+        patch.object(ChannelService, "exists_by_id", return_value=True),
+        patch.object(MessageService, "get_messages_by_channel", return_value=[]),
+    ):
+        with client.websocket_connect(f"/channels/1/ws") as websocket:
+            websocket.send_json(
+                {
+                    "id": None,
+                    "channelId": 1,
+                    "authorId": 2_147_483_648,
+                    "content": "This a message",
+                }
+            )
+            response = websocket.receive_json()
+            assert "error" in response
+
+            websocket.send_json(
+                {
+                    "id": None,
+                    "channelId": 1,
+                    "authorId": -2_147_483_649,
+                    "content": "This a message",
+                }
+            )
+            response = websocket.receive_json()
+            assert "error" in response
