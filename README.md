@@ -1,4 +1,4 @@
-# IS2-TP-Individual
+# Real-Time Chat Backend API
 
 ## Tabla de contenidos
 
